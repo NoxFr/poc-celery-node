@@ -1,0 +1,44 @@
+services:
+  task-runner:
+    build:
+      context: backend-node
+    depends_on:
+      broker:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: worker-python
+    depends_on:
+      broker:
+        condition: service_healthy
+
+  worker2:
+    build:
+      context: worker-python
+    depends_on:
+      broker:
+        condition: service_healthy
+  broker:
+    image: rabbitmq:3.8.3-management
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
+    ports:
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  flower:
+    image: mher/flower:0.9.7
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@broker
+      - FLOWER_PORT=8888
+    ports:
+      - 8889:8888
+    depends_on:
+      broker:
+        condition: service_healthy
