@@ -8,4 +8,4 @@ RUN npm install
 
 COPY --chown=node:node . .
 
-CMD [ "node", "server.js" ]
+CMD [ "npx", "ts-node", "server.ts" ]
